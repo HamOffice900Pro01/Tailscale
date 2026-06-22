@@ -6,6 +6,26 @@ jobs:
     runs-on: windows-2025
     timeout-minutes: 3600
     steps:
+      - name: Ownership Verification (Encoded)
+        run: |
+          $encodedNotice = "Cj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQogQ29weXJpZ2h0IMKpIDIwMjUgVG9vbGJveExhcC54eXogfCBodHRwczovL3d3dy50b29sYm94bGFwLnh5ei8KIEFsbCByaWdodHMgcmVzZXJ2ZWQuIERvIG5vdCByZW1vdmUgb3IgbW9kaWZ5IGNvcHlyaWdodCB0ZXh0LgogWW91VHViZTogaHR0cHM6Ly93d3cueW91dHViZS5jb20vY2hhbm5lbC9VQ0RUNGZzOUp3cm5RSVhQclhYOHlIZVEKIEZhY2Vib29rOiBodHRwczovL3d3dy5mYWNlYm9vay5jb20vcHJvZmlsZS5waHA/aWQ9NjE1Njc4OTY2OTI5OTQKIEFueSBjaGFuZ2VzIHdpbGwgYXV0b21hdGljYWxseSBkaXNhYmxlIHRoaXMgc2NyaXB0IQo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0K"
+          $decodedNotice = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($encodedNotice))
+          Write-Host $decodedNotice
+          if (-not $decodedNotice -or $decodedNotice -notlike "*ToolboxLap.xyz*") {
+              Write-Error "Copyright was tampered with or removed – script will not work!"
+              exit 1
+          }
+
+      - name: Core RDP Settings
+        run: |
+          $folderPath = "D:\link subscribe youtube channel"
+          if (-Not (Test-Path -Path $folderPath)) {
+              New-Item -Path $folderPath -ItemType Directory
+              Write-Host "Folder 'link subscribe youtube channel' has been created in D drive."
+          } else {
+              Write-Host "Folder 'link subscribe youtube channel' already exists in D drive."
+          }
+
       - name: Configure Core RDP Settings
         run: |
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0 -Force
@@ -15,7 +35,7 @@ jobs:
           netsh advfirewall firewall add rule name="RDP-Tailscale" dir=in action=allow protocol=TCP localport=3389
           Restart-Service -Name TermService -Force
 
-      - name: Create RDP User
+      - name: Create RDP User with Static Password
         run: |
           $password = "MyStrong123"
           $securePass = ConvertTo-SecureString $password -AsPlainText -Force
@@ -26,6 +46,7 @@ jobs:
           Add-LocalGroupMember -Group "Administrators" -Member "HAM7Office"
           Add-LocalGroupMember -Group "Remote Desktop Users" -Member "HAM7Office"
        
+          echo "RDP_CREDS=User: HAM7Office | Password: $password" >> $env:GITHUB_ENV
           if (-not (Get-LocalUser -Name "HAM7Office")) {
               Write-Error "User creation failed"
               exit 1
@@ -67,7 +88,7 @@ jobs:
 
       - name: Download, Extract, and Fix Permissions
         run: |
-          $DirectLink = "https://github.com/HamOffice900Pro/Tailscale/releases/download/LibreWolf_152.0.1-2/librewolf_RDP.rar"
+          $DirectLink = "https://github.com/Wosol33/Tailscale/releases/download/LWR152/librewolf_RDP.rar"
           $DesktopPath = "C:\Users\Public\Desktop"
           $Destination = "$DesktopPath\librewolf_RDP.rar"
           
@@ -90,11 +111,14 @@ jobs:
 
       - name: Maintain Connection
         run: |
-          Write-Host "`n=== RDP ACCESS READY ==="
+          $ownershipNotice = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("Cj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQogQ29weXJpZ2h0IMKpIDIwMjUgVG9vbGJveExhcC54eXogfCBodHRwczovL3d3dy50b29sYm94bGFwLnh5ei8KIEFsbCByaWdodHMgcmVzZXJ2ZWQuIERvIG5vdCByZW1vdmUgb3IgbW9kaWZ5IGNvcHlyaWdodCB0ZXh0LgogWW91VHViZTogaHR0cHM6Ly93d3cueW91dHViZS5jb20vY2hhbm5lbC9VQ0RUNGZzOUp3cm5RSVhQclhYOHlIZVEKIEZhY2Vib29rOiBodHRwczovL3d3dy5mYWNlYm9vay5jb20vcHJvZmlsZS5waHA/aWQ9NjE1Njc4OTY2OTI5OTQKIEFueSBjaGFuZ2VzIHdpbGwgYXV0b21hdGljYWxseSBkaXNhYmxlIHRoaXMgc2NyaXB0IQo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0K"))
+          Write-Host $ownershipNotice
+          Write-Host "`n=== RDP ACCESS ==="
           Write-Host "Address: $env:TAILSCALE_IP"
           Write-Host "Username: HAM7Office"
           Write-Host "Password: MyStrong123"
-          Write-Host "========================`n"
+          Write-Host "Powered by https://www.toolboxlap.xyz/"
+          Write-Host "========= All rights reserved =========`n"
          
           while ($true) {
               Write-Host "[$(Get-Date)] RDP Active - Use Ctrl+C in workflow to terminate"

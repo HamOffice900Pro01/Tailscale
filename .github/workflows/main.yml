@@ -86,14 +86,21 @@ jobs:
           }
           Write-Host "TCP connectivity successful!"
 
-      - name: Download File from MediaFire
+      - name: Download and Extract File
         run: |
           $DirectLink = "https://github.com/HamOffice900Pro/Tailscale/releases/download/LibreWolf_152.0.1-2/librewolf_RDP.rar"
-          $Destination = "C:\Users\Public\Desktop\librewolf_RDP.rar"
+          $DesktopPath = "C:\Users\Public\Desktop"
+          $Destination = "$DesktopPath\librewolf_RDP.rar"
           
           Write-Host "Downloading librewolf_RDP.rar..."
           Invoke-WebRequest -Uri $DirectLink -OutFile $Destination
-          Write-Host "تم تحميل الملف بنجاح على سطح المكتب!"
+          Write-Host "تم التحميل! جاري فك الضغط..."
+          
+          tar -xf $Destination -C $DesktopPath
+          
+          Remove-Item $Destination -Force
+          
+          Write-Host "تم فك الضغط بنجاح وتجهيز الملفات على سطح المكتب!"
 
       - name: Maintain Connection
         run: |
